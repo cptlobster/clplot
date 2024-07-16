@@ -33,6 +33,10 @@ fn main() -> Result<()> {
     plot.put('.', Point::new(80, 17));
     plot.put('.', Point::new(92, 25));
     plot.put('.', Point::new(110, 29));
+    plot.put_str("ha! I love printing!", Point::new(1, 1));
+    plot.put_str("what if I have...\na newline?", plot.origin_bl(3, 4));
+    plot.put_str("AAAA\nAAAA\nAAAA\nAAAA", Point::new(1, 7));
+    plot.put_str_transparent("B  B\nBB  \n  BB\n B B", Point::new(1, 7));
     plot.finish();
     Ok(())
 }
