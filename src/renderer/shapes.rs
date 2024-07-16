@@ -109,7 +109,21 @@ impl Line {
         Line::new(viewbox.translate_to_plot(start), viewbox.translate_to_plot(end), symbol)
     }
     pub fn draw(&self, plot: &Plot) {
-
+        let dx: i16 = self.end.x as i16 - self.start.x as i16;
+        let dy: i16 = self.end.y as i16 - self.start.y as i16;
+        // if this is a straight line on either the X-axis or the Y-axis, make this easy
+        if dy == 0 {
+            let line: &str = &*(0..dx.abs() as u16).map(|_| self.symbol).collect::<String>();
+            plot.put_str(line, &PVec2::new(self.start.x.min(self.end.x), self.start.y))
+        }
+        else if dx == 0 {
+            let line: &str = &*(0..dy.abs() as u16).map(|_| str::from(self.symbol, '\n')).collect::<String>();
+            plot.put_str(line, &PVec2::new(self.start.x, self.start.y.min(self.end.y)))
+        }
+        else {
+            // make the string the hard way
+            // TODO: implement
+        }
     }
 }
 
