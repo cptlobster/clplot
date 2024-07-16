@@ -16,27 +16,27 @@
 mod renderer;
 
 use std::io::Result;
-use crate::renderer::plot::{Plot, Point};
+use crate::renderer::plot::{Plot, PVec2};
 use crate::renderer::terminal::get_size;
 
 fn main() -> Result<()> {
     let size: (u16, u16) = get_size();
     let width: u16 = size.0;
-    let height: u16 = size.1;
+    let height: u16 = size.1 - 1;
     let plot: Plot = Plot::new(width, height);
     plot.clear();
-    plot.put('b', Point::new(11, 5));
-    plot.put('e', Point::new(20, 12));
-    plot.put('a', Point::new(32, 7));
-    plot.put('n', Point::new(45, 20));
-    plot.put('s', Point::new(69, 22));
-    plot.put('.', Point::new(80, 17));
-    plot.put('.', Point::new(92, 25));
-    plot.put('.', Point::new(110, 29));
-    plot.put_str("ha! I love printing!", Point::new(1, 1));
+    plot.put('b', PVec2::new(11, 5));
+    plot.put('e', PVec2::new(20, 12));
+    plot.put('a', PVec2::new(32, 7));
+    plot.put('n', PVec2::new(45, 20));
+    plot.put('s', PVec2::new(69, 22));
+    plot.put('.', PVec2::new(80, 17));
+    plot.put('.', PVec2::new(92, 25));
+    plot.put('.', PVec2::new(110, 29));
+    plot.put_str("ha! I love printing!", PVec2::new(1, 1));
     plot.put_str("what if I have...\na newline?", plot.origin_bl(3, 4));
-    plot.put_str("AAAA\nAAAA\nAAAA\nAAAA", Point::new(1, 7));
-    plot.put_str_transparent("B  B\nBB  \n  BB\n B B", Point::new(1, 7));
+    plot.put_str("AAAA\nAAAA\nAAAA\nAAAA", PVec2::new(1, 7));
+    plot.put_str_transparent("B  B\nBB  \n  BB\n B B", PVec2::new(1, 7));
     plot.finish();
     Ok(())
 }

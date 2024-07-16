@@ -9,14 +9,14 @@ use tailcall::tailcall;
 
 /// Basic structure for representing a 2D position on a plot. Since plots use only unsigned integer
 /// values, this struct only supports unsigned integers.
-#[derive(PartialEq)]
-pub struct Point {
+#[derive(PartialEq, Copy, Clone)]
+pub struct PVec2 {
     pub x: u16,
     pub y: u16,
 }
 
-impl Point {
-    pub fn new(x: u16, y: u16) -> Point { Point { x, y } }
+impl PVec2 {
+    pub fn new(x: u16, y: u16) -> PVec2 { PVec2 { x, y } }
 
     /// Determine what values to add to reach an other point.
     ///
@@ -27,7 +27,7 @@ impl Point {
     /// let c: Point = a.to(b) // returns Point(1, 1)
     /// let d: bool = a + c == b // returns true
     /// ```
-    pub fn to(&self, other: &Point) -> Point { Point::new(other.x - self.x, other.y - self.y) }
+    pub fn to(&self, other: &PVec2) -> PVec2 { PVec2::new(other.x - self.x, other.y - self.y) }
 }
 
 /// Basic plot object.
@@ -52,32 +52,32 @@ impl Plot {
         max(lower, min(n, upper))
     }
 
-    fn clamp_point(point: Point, x_min: u16, x_max: u16, y_min: u16, y_max: u16) -> Point {
-        Point::new(Self::clamp(point.x, x_min, x_max), Self::clamp(point.y, y_min, y_max))
     /// Constrain a point within a minimum and maximum XY range. Each dimension will be clamped
     /// separately.
+    fn clamp_point(point: &PVec2, x_min: u16, x_max: u16, y_min: u16, y_max: u16) -> PVec2 {
+        PVec2::new(Self::clamp(point.x, x_min, x_max), Self::clamp(point.y, y_min, y_max))
     }
 
-    fn clamp_to_plot(&self, point: Point) -> Point {
     /// Constrain a point within the bounding box of this plot area.
+    fn clamp_to_plot(&self, point: &PVec2) -> PVec2 {
         Self::clamp_point(point, self.x_min, self.x_max, self.y_min, self.y_max)
     }
 
     /// Derive a point from decimal (float) values (from 0.0 - 1.0). (0.0, 0.0) corresponds to top
     /// left, (1.0, 1.0) corresponds to bottom right.
-    pub fn derive_point_dec(&self, x: f32, y: f32) -> Point {
+    pub fn derive_point_dec(&self, x: f32, y: f32) -> PVec2 {
         let x_rd: u16 = x.round() as u16;
         let y_rd: u16 = y.round() as u16;
-        self.clamp_to_plot(Point::new(x_rd, y_rd))
+        self.clamp_to_plot(&PVec2::new(x_rd, y_rd))
     }
 
     /// Get a point offset from the top left of the plot area.
-    pub fn origin_bl(&self, x: u16, y: u16) -> Point {
-        self.clamp_to_plot(Point::new(x, self.height - y))
+    pub fn origin_bl(&self, x: u16, y: u16) -> PVec2 {
+        self.clamp_to_plot(&PVec2::new(x, self.height - y))
     }
     /// Get a point offset from the bottom right of the plot area.
-    pub fn origin_br(&self, x: u16, y: u16) -> Point {
-        self.clamp_to_plot(Point::new(self.width - x, self.height - y))
+    pub fn origin_br(&self, x: u16, y: u16) -> PVec2 {
+        self.clamp_to_plot(&PVec2::new(self.width - x, self.height - y))
     }
 
     /// Create a new plot area of a specified width/height.
@@ -124,8 +124,8 @@ impl Plot {
     }
 
     /// Place a character at a location on the plot area.
-    pub fn put(&self, character: char, point: Point) {
-        let actual : Point = self.clamp_to_plot(point);
+    pub fn put(&self, character: char, point: &PVec2) {
+        let actual : PVec2 = self.clamp_to_plot(point);
         let mut out: Stdout = stdout();
         queue!(out, RestorePosition, MoveUp(self.height - actual.y), MoveRight(actual.x), Print(character));
         out.flush().expect("Error with terminal interaction");
@@ -133,9 +133,9 @@ impl Plot {
 
     /// Print a string on the plot area. Note that whitespace will overwrite existing content; You
     /// can use `put_str_transparent()` instead if you want to ignore whitespace.
-    pub fn put_str(&self, content: &str, start: Point) {
+    pub fn put_str(&self, content: &str, start: PVec2) {
         let mut out: Stdout = stdout();
-        let actual : Point = self.clamp_to_plot(start);
+        let actual : PVec2 = self.clamp_to_plot(start);
         queue!(out, RestorePosition, MoveUp(self.height - actual.y), MoveRight(actual.x));
         let lines = content.split("\n");
         for line in lines {
@@ -161,9 +161,9 @@ impl Plot {
     }
 
     /// Put a string on the plot area. Whitespace will not overwrite existing content.
-    pub fn put_str_transparent(&self, content: &str, start: Point) {
+    pub fn put_str_transparent(&self, content: &str, start: PVec2) {
         let mut out: Stdout = stdout();
-        let actual : Point = self.clamp_to_plot(start);
+        let actual : PVec2 = self.clamp_to_plot(start);
         queue!(out, RestorePosition, MoveUp(self.height - actual.y), MoveRight(actual.x));
         let lines = content.split("\n");
         for line in lines {
