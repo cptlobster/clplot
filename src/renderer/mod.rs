@@ -3,3 +3,4 @@
 /// to handle drawing in arbitrary locations and colors.
 pub mod terminal;
 pub mod plot;
+pub mod shapes;
