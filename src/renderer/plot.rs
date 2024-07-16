@@ -18,7 +18,7 @@ pub struct PVec2 {
 impl PVec2 {
     pub fn new(x: u16, y: u16) -> PVec2 { PVec2 { x, y } }
 
-    /// Determine what values to add to reach an other point.
+    /// Determine what values to add to reach another point.
     ///
     /// ## Example
     /// ```rs
@@ -133,7 +133,7 @@ impl Plot {
 
     /// Print a string on the plot area. Note that whitespace will overwrite existing content; You
     /// can use `put_str_transparent()` instead if you want to ignore whitespace.
-    pub fn put_str(&self, content: &str, start: PVec2) {
+    pub fn put_str(&self, content: &str, start: &PVec2) {
         let mut out: Stdout = stdout();
         let actual : PVec2 = self.clamp_to_plot(start);
         queue!(out, RestorePosition, MoveUp(self.height - actual.y), MoveRight(actual.x));
@@ -161,7 +161,7 @@ impl Plot {
     }
 
     /// Put a string on the plot area. Whitespace will not overwrite existing content.
-    pub fn put_str_transparent(&self, content: &str, start: PVec2) {
+    pub fn put_str_transparent(&self, content: &str, start: &PVec2) {
         let mut out: Stdout = stdout();
         let actual : PVec2 = self.clamp_to_plot(start);
         queue!(out, RestorePosition, MoveUp(self.height - actual.y), MoveRight(actual.x));
