@@ -1,11 +1,10 @@
 /// Low level API for drawing on the command line. Has "plots" (2D area on the terminal that can be
 /// drawn in by other utilities) and structures for basic shapes.
 use std::cmp::{max, min};
-use std::io::{self};
+use std::io::{Write, stdout, Stdout};
 
-use crossterm::{cursor::{RestorePosition, SavePosition},
-                ExecutableCommand};
-use crossterm::cursor::{MoveDown, MoveRight, MoveUp};
+use crossterm::{cursor::{RestorePosition, SavePosition, MoveDown, MoveRight, MoveUp},
+                ExecutableCommand, queue, QueueableCommand, style::{Print}};
 
 /// Basic structure for representing a 2D position on a plot. Since plots use only unsigned integer
 /// values, this struct only supports unsigned integers.
@@ -61,11 +60,10 @@ impl Plot {
 
     /// Create a new plot area of a specified width/height.
     pub fn new(width: u16, height: u16) -> Plot {
+        let mut out: Stdout = stdout();
         let nls: String = (0..height).map(|_| '\n').collect::<String>();
-        print!("{}", nls);
-        io::stdout()
-            .execute(SavePosition)
-            .expect("Error with terminal interaction");
+        queue!(out, Print(nls), SavePosition);
+        out.flush().expect("Error with terminal interaction");
         Plot {
             width,
             height,
@@ -79,14 +77,10 @@ impl Plot {
     /// Resize plot to new width/height. It is recommended that you clear the plot after you
     /// change size.
     pub fn resize(&self, width: u16, height: u16) -> Plot {
-        io::stdout()
-            .execute(RestorePosition)
-            .expect("Error with terminal interaction");
-        io::stdout()
-            .execute(MoveUp(self.height))
-            .expect("Error with terminal interaction");
+        let mut out: Stdout = stdout();
         let nls: String = (0..height).map(|_| '\n').collect::<String>();
-        print!("{}", nls);
+        queue!(out, RestorePosition, MoveUp(self.height), Print(nls), SavePosition);
+        out.flush().expect("Error with terminal interaction");
         Plot {
             width,
             height,
@@ -99,40 +93,26 @@ impl Plot {
 
     /// Clear the plot area (fill the entire area with spaces).
     pub fn clear(&self) {
-        io::stdout()
-            .execute(RestorePosition)
-            .expect("Error with terminal interaction");
-        io::stdout()
-            .execute(MoveUp(self.height))
-            .expect("Error with terminal interaction");
+        let mut out: Stdout = stdout();
         let cleared_area: String = (0..self.height).map(
             |_| (0..self.width).map(|_| " ").collect::<String>() + "\n")
             .collect::<String>();
-        print!("{}", cleared_area)
+        queue!(out, RestorePosition, MoveUp(self.height), Print(cleared_area));
+        out.flush().expect("Error with terminal interaction");
     }
 
     /// Place a character at a location on the plot area.
     pub fn put(&self, character: char, point: Point) {
         let actual : Point = self.clamp_to_plot(point);
-        io::stdout()
-            .execute(RestorePosition)
-            .expect("Error with terminal interaction");
-        io::stdout()
-            .execute(MoveUp(self.height - actual.y))
-            .expect("Error with terminal interaction");
-        io::stdout()
-            .execute(MoveRight(actual.x))
-            .expect("Error with terminal interaction");
-        print!("{}", character);
+        let mut out: Stdout = stdout();
+        queue!(out, RestorePosition, MoveUp(self.height - actual.y), MoveRight(actual.x), Print(character));
+        out.flush().expect("Error with terminal interaction");
     }
     /// Run this when you are done with the plot; This will position the cursor on the line below,
     /// so that the plot remains visible.
     pub fn finish(&self) {
-        io::stdout()
-            .execute(RestorePosition)
-            .expect("Error with terminal interaction");
-        io::stdout()
-            .execute(MoveDown(1))
-            .expect("Error with terminal interaction");
+        let mut out: Stdout = stdout();
+        queue!(out, RestorePosition, MoveDown(1));
+        out.flush().expect("Error with terminal interaction");
     }
 }
