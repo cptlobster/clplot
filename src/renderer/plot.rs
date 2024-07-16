@@ -41,15 +41,25 @@ pub struct Plot {
 }
 
 impl Plot {
+    /// Cut off the end of a string if it is too long.
+    fn clip(input: &str, max_len: u16) -> &str {
+        if (input.len() as u16) <= max_len { input } else { input.split_at(max_len as usize).0 }
+    }
+
+    /// Constrain a number within a range; If it falls outside the range, return the minimum or
+    /// maximum value, depending on if it's smaller or larger.
     fn clamp(n: u16, lower: u16, upper: u16) -> u16 {
         max(lower, min(n, upper))
     }
 
     fn clamp_point(point: Point, x_min: u16, x_max: u16, y_min: u16, y_max: u16) -> Point {
         Point::new(Self::clamp(point.x, x_min, x_max), Self::clamp(point.y, y_min, y_max))
+    /// Constrain a point within a minimum and maximum XY range. Each dimension will be clamped
+    /// separately.
     }
 
     fn clamp_to_plot(&self, point: Point) -> Point {
+    /// Constrain a point within the bounding box of this plot area.
         Self::clamp_point(point, self.x_min, self.x_max, self.y_min, self.y_max)
     }
 
@@ -129,26 +139,24 @@ impl Plot {
         queue!(out, RestorePosition, MoveUp(self.height - actual.y), MoveRight(actual.x));
         let lines = content.split("\n");
         for line in lines {
-            queue!(out, Print(line), Print("\n"), MoveRight(actual.x));
+            queue!(out, Print(Self::clip(line, self.width - actual.x)), Print("\n"), MoveRight(actual.x));
         }
         out.flush().expect("Error with terminal interaction");
     }
 
+    /// Helper function for `put_str_transparent()`.
     #[tailcall]
     fn consume_line(out: &mut Stdout, line: &str) {
         if line.len() == 0 { return }
         let Some((left, right)) = line.find(|a: char| { a.is_whitespace() }).map(|i| line.split_at(i)) else {
             out.queue(Print(line)).expect("Error with terminal interaction");
-            out.flush().expect("Error with terminal interaction");
             return
         };
         out.queue(Print(left)).expect("Error with terminal interaction");
-        out.flush().expect("Error with terminal interaction");
         let Some((l2, r2)) = right.find(|a: char| { !a.is_whitespace() }).map(|i| right.split_at(i)) else {
             return
         };
         out.queue(MoveRight(l2.len() as u16)).expect("Error with terminal interaction");
-        out.flush().expect("Error with terminal interaction");
         Self::consume_line(out, r2)
     }
 
@@ -159,7 +167,7 @@ impl Plot {
         queue!(out, RestorePosition, MoveUp(self.height - actual.y), MoveRight(actual.x));
         let lines = content.split("\n");
         for line in lines {
-            Self::consume_line(&mut out, line);
+            Self::consume_line(&mut out, Self::clip(line, self.width - actual.x));
             queue!(out, Print("\n"), MoveRight(actual.x));
         }
         out.flush().expect("Error with terminal interaction");
