@@ -83,7 +83,7 @@ impl Plot {
     /// Create a new plot area of a specified width/height.
     pub fn new(width: u16, height: u16) -> Plot {
         let mut out: Stdout = stdout();
-        let nls: String = (0..height).map(|_| '\n').collect::<String>();
+        let nls: String = "\n".repeat(height as usize);
         queue!(out, Print(nls), SavePosition);
         out.flush().expect("Error with terminal interaction");
         Plot {
@@ -100,7 +100,7 @@ impl Plot {
     /// change size.
     pub fn resize(&self, width: u16, height: u16) -> Plot {
         let mut out: Stdout = stdout();
-        let nls: String = (0..height).map(|_| '\n').collect::<String>();
+        let nls: String = "\n".repeat(height as usize);
         queue!(out, RestorePosition, MoveUp(self.height), Print(nls), SavePosition);
         out.flush().expect("Error with terminal interaction");
         Plot {
@@ -116,9 +116,7 @@ impl Plot {
     /// Clear the plot area (fill the entire area with spaces).
     pub fn clear(&self) {
         let mut out: Stdout = stdout();
-        let cleared_area: String = (0..self.height).map(
-            |_| (0..self.width).map(|_| " ").collect::<String>() + "\n")
-            .collect::<String>();
+        let cleared_area: String = (" ".repeat(self.width as usize) + "n").repeat(self.height as usize);
         queue!(out, RestorePosition, MoveUp(self.height), Print(cleared_area));
         out.flush().expect("Error with terminal interaction");
     }
