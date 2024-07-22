@@ -2,7 +2,7 @@
 /// drawn in by other utilities) and structures for basic shapes.
 use std::cmp::{max, min};
 use std::io::{Write, stdout, Stdout};
-
+use std::ops::{Add, Sub};
 use crossterm::{cursor::{RestorePosition, SavePosition, MoveDown, MoveRight, MoveUp},
                 queue, QueueableCommand, style::{Print}};
 use tailcall::tailcall;
@@ -28,6 +28,21 @@ impl PVec2 {
     /// let d: bool = a + c == b // returns true
     /// ```
     pub fn to(&self, other: &PVec2) -> PVec2 { PVec2::new(other.x - self.x, other.y - self.y) }
+}
+
+impl Add for PVec2 {
+    type Output = PVec2;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        PVec2::new(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+impl Sub for PVec2 {
+    type Output = PVec2;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        PVec2::new(self.x - rhs.x, self.y - rhs.y)
+    }
 }
 
 /// Basic plot object.

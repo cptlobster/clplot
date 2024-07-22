@@ -1,3 +1,4 @@
+use std::ops::{Add, Sub};
 /// Basic shapes.
 use crate::PVec2;
 use crate::renderer::plot::Plot;
@@ -31,10 +32,52 @@ impl Vec2 {
     }
 }
 
-/// The "view box" provides an easy way to handle multiple things:
+impl Add for Vec2 {
+    type Output = Vec2;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Vec2::new(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+
+impl Sub for Vec2 {
+    type Output = Vec2;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Vec2::new(self.x - rhs.x, self.y - rhs.y)
+    }
+}
+
+/// The "view box" provides an easy way to constrain shapes to a specific portion of the plot area.
+pub struct ViewBox {
+    plot: Plot,
+    position: PVec2,
+    size: PVec2,
+}
+
+impl ViewBox {
+    fn clamp(n: u16, lower: u16, upper: u16) -> u16 {
+        lower.max(n.min(upper))
+    }
+    fn clamp_point(point: PVec2, x_min: u16, x_max: u16, y_min: u16, y_max: u16) -> PVec2 {
+        PVec2::new(Self::clamp(point.x, x_min, x_max), Self::clamp(point.y, y_min, y_max))
+    }
+
+    fn clamp_to_plot(&self, point: PVec2) -> PVec2 {
+        Self::clamp_point(point, 0, self.size.x, 0, self.size.y)
+    }
+
+    /// Translates relative coordinates to absolute coordinates on the parent plot
+    pub fn translate_to_plot(&self, point: PVec2) -> PVec2 {
+        self.clamp_to_plot(point + self.position)
+    }
+}
+
+/// The "scaled view box" provides an easy way to handle multiple things:
 /// - It can constrain shapes to a specific portion of the plot area
 /// - It allows for converting from arbitrary scales to plot coordinate values.
-pub struct ViewBox {
+pub struct ScaledViewBox {
+    plot: Plot,
     position: PVec2,
     size: PVec2,
     x_min: f32,
@@ -43,7 +86,7 @@ pub struct ViewBox {
     y_max: f32,
 }
 
-impl ViewBox {
+impl ScaledViewBox {
     fn clamp(n: f32, lower: f32, upper: f32) -> f32 {
         lower.max(n.min(upper))
     }
@@ -86,11 +129,14 @@ impl Point {
     pub fn new(position: PVec2, symbol: char) -> Point {
         Point {position, symbol}
     }
-    pub fn in_viewbox(viewbox: ViewBox, position: Vec2, symbol: char) -> Point {
+    pub fn in_svb(viewbox: ScaledViewBox, position: Vec2, symbol: char) -> Point {
         Self::new(viewbox.translate_to_plot(position), symbol)
     }
     pub fn draw(&self, plot: &Plot) {
         plot.put(self.symbol, &self.position);
+    }
+    pub fn draw_vb(&self, viewbox: &ViewBox) {
+        Self::new(self.position + viewbox.position, self.symbol).draw(&viewbox.plot)
     }
 }
 
@@ -105,7 +151,7 @@ impl Line {
     pub fn new(start: PVec2, end: PVec2, symbol: char) -> Line {
         Line { start, end, symbol }
     }
-    pub fn in_viewbox(viewbox: ViewBox, start: Vec2, end: Vec2, symbol: char) -> Line {
+    pub fn in_svb(viewbox: ScaledViewBox, start: Vec2, end: Vec2, symbol: char) -> Line {
         Line::new(viewbox.translate_to_plot(start), viewbox.translate_to_plot(end), symbol)
     }
     pub fn draw(&self, plot: &Plot) {
@@ -125,6 +171,9 @@ impl Line {
             // TODO: implement
         }
     }
+    pub fn draw_vb(&self, viewbox: &ViewBox) {
+        Self::new(self.start + viewbox.position, self.end + viewbox.position, self.symbol).draw(&viewbox.plot)
+    }
 }
 
 /// A rectangle. Can be drawn on a plot area.
@@ -138,7 +187,8 @@ impl Rect {
     pub fn new(position: PVec2, size: PVec2, symbol: char) -> Rect {
         Rect { position, size, symbol }
     }
-    pub fn in_viewbox(viewbox: ViewBox, position: Vec2, size: Vec2, symbol: char) -> Rect {
+
+    pub fn in_svb(viewbox: ScaledViewBox, position: Vec2, size: Vec2, symbol: char) -> Rect {
         Rect::new(viewbox.translate_to_plot(position), viewbox.translate_to_plot(size), symbol)
     }
 
@@ -152,5 +202,8 @@ impl Rect {
         Line::new(bl, br, self.symbol).draw(plot);
         Line::new(tl, bl, self.symbol).draw(plot);
         Line::new(tr, br, self.symbol).draw(plot);
+    }
+    pub fn draw_vb(&self, viewbox: &ViewBox) {
+        Self::new(self.position + viewbox.position, self.size, self.symbol).draw(&viewbox.plot)
     }
 }
