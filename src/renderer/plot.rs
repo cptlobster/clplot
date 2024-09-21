@@ -131,7 +131,7 @@ impl Plot {
     /// Clear the plot area (fill the entire area with spaces).
     pub fn clear(&self) {
         let mut out: Stdout = stdout();
-        let cleared_area: String = (" ".repeat(self.width as usize) + "n").repeat(self.height as usize);
+        let cleared_area: String = (" ".repeat(self.width as usize) + "\n").repeat(self.height as usize);
         queue!(out, RestorePosition, MoveUp(self.height), Print(cleared_area));
         out.flush().expect("Error with terminal interaction");
     }

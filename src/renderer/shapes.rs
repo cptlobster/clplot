@@ -48,6 +48,18 @@ impl Sub for Vec2 {
     }
 }
 
+/// Get the distance between two Vec2s.
+fn distance(lhs: &Vec2, rhs: &Vec2) -> f32 { ((lhs.x - rhs.x).powi(2) + (lhs.y - rhs.y).powi(2)).sqrt() }
+/// Get the distance between two PVec2s. This returns as a floating-point value.
+fn distance_pv(lhs: &PVec2, rhs: &PVec2) -> f32 {
+    let lx: f32 = lhs.x as f32;
+    let ly: f32 = lhs.y as f32;
+    let rx: f32 = rhs.x as f32;
+    let ry: f32 = rhs.y as f32;
+    ((lx - rx).powi(2) + (ly - ry).powi(2)).sqrt()
+}
+
+
 /// The "view box" provides an easy way to constrain shapes to a specific portion of the plot area.
 pub struct ViewBox {
     plot: Plot,
@@ -129,12 +141,15 @@ impl Point {
     pub fn new(position: PVec2, symbol: char) -> Point {
         Point {position, symbol}
     }
+    /// Create a point based on a ScaledViewBox's coordinate system and convert it to integer coordinates.
     pub fn in_svb(viewbox: ScaledViewBox, position: Vec2, symbol: char) -> Point {
         Self::new(viewbox.translate_to_plot(position), symbol)
     }
+    /// Draw the point in the selected plot area.
     pub fn draw(&self, plot: &Plot) {
         plot.put(self.symbol, &self.position);
     }
+    /// Draw the point in the selected ViewBox. This will translate to the ViewBox's origin.
     pub fn draw_vb(&self, viewbox: &ViewBox) {
         Self::new(self.position + viewbox.position, self.symbol).draw(&viewbox.plot)
     }
@@ -159,15 +174,18 @@ impl Line {
         let dy: i16 = self.end.y as i16 - self.start.y as i16;
         // if this is a straight line on either the X-axis or the Y-axis, make this easy
         if dy == 0 {
-            let line: &str = self.symbol.to_string().repeat(dx.abs() as usize).as_str();
-            plot.put_str(line, &PVec2::new(self.start.x.min(self.end.x), self.start.y))
+            let line: String = self.symbol.to_string().repeat(dx.abs() as usize);
+            plot.put_str(line.as_str(), &PVec2::new(self.start.x.min(self.end.x), self.start.y))
         }
         else if dx == 0 {
-            let line: &str = "\n".repeat(dy.abs() as usize).as_str();
-            plot.put_str(line, &PVec2::new(self.start.x, self.start.y.min(self.end.y)))
+            let line: String = (self.symbol.to_string() + "\n").repeat(dy.abs() as usize);
+            plot.put_str(line.as_str(), &PVec2::new(self.start.x, self.start.y.min(self.end.y)))
         }
         else {
             // make the string the hard way
+            let distance: f32 = distance_pv(&self.start, &self.end);
+            let step_x: f32 = dx as f32 / distance;
+            let step_y: f32 = dy as f32 / distance;
             // TODO: implement
         }
     }
