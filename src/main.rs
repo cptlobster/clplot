@@ -51,6 +51,10 @@ fn main() -> Result<()> {
     let l2 = Line::new(plot.origin_bl(1, 1), plot.origin_br(1, 1), '-');
     l1.draw(&plot);
     l2.draw(&plot);
+    let l3 = Line::new(PVec2::new(2, 2), plot.origin_br(4, 2), '#');
+    let l4 = Line::new(plot.origin_bl(2, 2), plot.origin_br(2, 10), '#');
+    l3.draw(&plot);
+    l4.draw(&plot);
     plot.finish();
     Ok(())
 }

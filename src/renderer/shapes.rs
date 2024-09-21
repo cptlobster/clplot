@@ -183,10 +183,39 @@ impl Line {
         }
         else {
             // make the string the hard way
-            let distance: f32 = distance_pv(&self.start, &self.end);
-            let step_x: f32 = dx as f32 / distance;
-            let step_y: f32 = dy as f32 / distance;
-            // TODO: implement
+            // determine our step size on the x axis
+            // we scale our step value so that the y step is 1; this allows us to generate our line,
+            // line by line
+            let mut step_x: f32 = dx as f32 / dy as f32;
+            // create position and target values
+            let mut px: f32 = self.start.x as f32;
+            let mut tx: f32 = self.end.x as f32;
+            if (step_x < 0.0) {
+                px = self.end.x as f32;
+                tx = self.start.x as f32;
+            }
+            let mut py: u16 = self.start.y.min(self.end.y);
+            let ty: u16 = self.end.y.max(self.start.y);
+            let mut lines: String = "".to_string();
+            // create the string for the line
+            // this is probably horribly inefficient, I should really figure out a way to make this
+            // run better. it works for now at least.
+            while (px != tx && py != ty) {
+                let prev_x: f32 = px;
+                px += step_x;
+                // get start and end points for the actual line segment
+                let str_start: i16 = px.min(prev_x).round() as i16;
+                let str_end: i16 = px.max(prev_x).round() as i16;
+                // get the length of the line segment
+                let str_len: i16 = str_end - str_start;
+                // fill from 0 to start with whitespace, start to end with character
+                let line: String = ' '.to_string().repeat(str_start as usize) + self.symbol.to_string().repeat(str_len as usize).as_str();
+                // finish it off with a newline
+                lines += (line + "\n").as_str();
+                py += 1
+            }
+            // push this god-awful monstrosity to the plot
+            plot.put_str_transparent(lines.as_str(), &PVec2::new(self.start.x, self.start.y.min(self.end.y)));
         }
     }
     pub fn draw_vb(&self, viewbox: &ViewBox) {
