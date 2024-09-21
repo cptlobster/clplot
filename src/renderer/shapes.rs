@@ -181,8 +181,9 @@ impl Line {
             let line: String = (self.symbol.to_string() + "\n").repeat(dy.abs() as usize);
             plot.put_str(line.as_str(), &PVec2::new(self.start.x, self.start.y.min(self.end.y)))
         }
+        // make the string the hard way; if you somehow make it to this with either dx or dy = 0, I
+        // would be very concerned and would expect this to fail spectacularly. Good luck, friend.
         else {
-            // make the string the hard way
             // determine our step size on the x axis
             // we scale our step value so that the y step is 1; this allows us to generate our line,
             // line by line
