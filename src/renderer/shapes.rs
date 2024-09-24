@@ -1,64 +1,24 @@
+//     Copyright (C) 2024  Dustin Thomas <stdio@cptlobster.dev>
+//
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+/// Common shapes and drawing code.
+
+
 use std::ops::{Add, Sub};
 /// Basic shapes.
-use crate::PVec2;
 use crate::renderer::plot::Plot;
-
-/// Basic structure for representing a 2D value (position, size, etc.). These are represented as
-/// floating point values to allow flexibility for input data.
-#[derive(PartialEq, Copy, Clone)]
-pub struct Vec2 {
-    x: f32,
-    y: f32,
-}
-
-impl Vec2 {
-    pub fn new(x: f32, y: f32) -> Vec2 { Vec2 { x, y } }
-
-    /// Determine what values to add to reach an other point.
-    ///
-    /// ## Example
-    /// ```rs
-    /// let a: Point = Point::new(1, 3)
-    /// let b: Point = Point::new(2, 4)
-    /// let c: Point = a.to(b) // returns Point(1, 1)
-    /// let d: bool = a + c == b // returns true
-    /// ```
-    pub fn to(&self, other: &Vec2) -> Vec2 { Vec2::new(other.x - self.x, other.y - self.y) }
-
-    /// Get the distance between two points.
-    pub fn distance(&self, other: &Vec2) -> f32 {
-        let dist = self.to(other);
-        (dist.x * dist.x) + (dist.y * dist.y).sqrt()
-    }
-}
-
-impl Add for Vec2 {
-    type Output = Vec2;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        Vec2::new(self.x + rhs.x, self.y + rhs.y)
-    }
-}
-
-impl Sub for Vec2 {
-    type Output = Vec2;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        Vec2::new(self.x - rhs.x, self.y - rhs.y)
-    }
-}
-
-/// Get the distance between two Vec2s.
-fn distance(lhs: &Vec2, rhs: &Vec2) -> f32 { ((lhs.x - rhs.x).powi(2) + (lhs.y - rhs.y).powi(2)).sqrt() }
-/// Get the distance between two PVec2s. This returns as a floating-point value.
-fn distance_pv(lhs: &PVec2, rhs: &PVec2) -> f32 {
-    let lx: f32 = lhs.x as f32;
-    let ly: f32 = lhs.y as f32;
-    let rx: f32 = rhs.x as f32;
-    let ry: f32 = rhs.y as f32;
-    ((lx - rx).powi(2) + (ly - ry).powi(2)).sqrt()
-}
-
+use crate::data::{Vec2, PVec2};
 
 /// The "view box" provides an easy way to constrain shapes to a specific portion of the plot area.
 pub struct ViewBox {

@@ -14,6 +14,8 @@
 //     You should have received a copy of the GNU General Public License
 //     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 mod renderer;
+mod chart;
+mod data;
 
 use std::io::Result;
 use crate::renderer::plot::{Plot, PVec2};

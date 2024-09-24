@@ -1,49 +1,26 @@
+// clplot::renderer::plot - low-level API for drawing on command line
+//     Copyright (C) 2024  Dustin Thomas <stdio@cptlobster.dev>
+//
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+//
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /// Low level API for drawing on the command line. Has "plots" (2D area on the terminal that can be
 /// drawn in by other utilities) and structures for basic shapes.
 use std::cmp::{max, min};
 use std::io::{Write, stdout, Stdout};
-use std::ops::{Add, Sub};
 use crossterm::{cursor::{RestorePosition, SavePosition, MoveDown, MoveRight, MoveUp},
                 queue, QueueableCommand, style::{Print}};
 use tailcall::tailcall;
-
-/// Basic structure for representing a 2D position on a plot. Since plots use only unsigned integer
-/// values, this struct only supports unsigned integers.
-#[derive(PartialEq, Copy, Clone)]
-pub struct PVec2 {
-    pub x: u16,
-    pub y: u16,
-}
-
-impl PVec2 {
-    pub fn new(x: u16, y: u16) -> PVec2 { PVec2 { x, y } }
-
-    /// Determine what values to add to reach another point.
-    ///
-    /// ## Example
-    /// ```rs
-    /// let a: Point = Point::new(1, 3)
-    /// let b: Point = Point::new(2, 4)
-    /// let c: Point = a.to(b) // returns Point(1, 1)
-    /// let d: bool = a + c == b // returns true
-    /// ```
-    pub fn to(&self, other: &PVec2) -> PVec2 { PVec2::new(other.x - self.x, other.y - self.y) }
-}
-
-impl Add for PVec2 {
-    type Output = PVec2;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        PVec2::new(self.x + rhs.x, self.y + rhs.y)
-    }
-}
-impl Sub for PVec2 {
-    type Output = PVec2;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        PVec2::new(self.x - rhs.x, self.y - rhs.y)
-    }
-}
+use crate::data::PVec2;
 
 /// Basic plot object.
 pub struct Plot {
