@@ -18,11 +18,27 @@ mod chart;
 mod data;
 
 use std::io::Result;
-use crate::renderer::plot::{Plot, PVec2};
+use crate::renderer::plot::Plot;
+use crate::data::PVec2;
 use crate::renderer::shapes::Line;
 use crate::renderer::terminal::get_size;
+use clap::Parser;
+
+/// Command-line graphing and plotting utility.
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    /// Width of draw area. If undefined, uses full width of console.
+    #[arg(long, default_value_t = 0)]
+    width: u16,
+
+    /// Height of draw area. If undefined, uses full height of console.
+    #[arg(long, default_value_t = 0)]
+    height: u16,
+}
 
 fn main() -> Result<()> {
+    let args = Args::parse();
     let size: (u16, u16) = get_size();
     let width: u16 = size.0;
     let height: u16 = size.1 - 1;

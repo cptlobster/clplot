@@ -50,8 +50,8 @@ impl Sub for PVec2 {
 /// allow for decimal values, and can be overlaid onto a ScaledViewBox to get proper coordinates.
 #[derive(PartialEq, Copy, Clone)]
 pub struct Vec2 {
-    x: f32,
-    y: f32,
+    pub x: f32,
+    pub y: f32,
 }
 
 impl Vec2 {
