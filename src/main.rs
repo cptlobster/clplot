@@ -101,8 +101,10 @@ fn main() -> Result<()> {
             l2.draw(&plot);
             let l3 = Line::new(PVec2::new(2, 2), plot.origin_br(4, 2), '#');
             let l4 = Line::new(plot.origin_bl(2, 2), plot.origin_br(2, 10), '#');
+            let l5 = Line::new(plot.origin_bl(6, 20), plot.origin_bl(12, 4), '*');
             l3.draw(&plot);
             l4.draw(&plot);
+            l5.draw(&plot);
             plot.finish();
             Ok(())
         }
