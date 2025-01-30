@@ -14,8 +14,6 @@
 //     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /// Common shapes and drawing code.
 
-
-use std::ops::{Add, Sub};
 /// Basic shapes.
 use crate::renderer::plot::Plot;
 use crate::data::{Vec2, PVec2};
@@ -31,6 +29,7 @@ impl ViewBox {
     fn clamp(n: u16, lower: u16, upper: u16) -> u16 {
         lower.max(n.min(upper))
     }
+    
     fn clamp_point(point: PVec2, x_min: u16, x_max: u16, y_min: u16, y_max: u16) -> PVec2 {
         PVec2::new(Self::clamp(point.x, x_min, x_max), Self::clamp(point.y, y_min, y_max))
     }
@@ -165,8 +164,8 @@ impl Line {
                 let prev_x: f32 = px;
                 px += step_x;
                 // get start and end points for the actual line segment
-                let str_start: i16 = px.min(prev_x).round() as i16;
-                let str_end: i16 = px.max(prev_x).round() as i16;
+                let str_start: i16 = px.min(prev_x).floor() as i16;
+                let str_end: i16 = px.max(prev_x).ceil() as i16;
                 // get the length of the line segment
                 let str_len: i16 = str_end - str_start;
                 // fill from 0 to start with whitespace, start to end with character
